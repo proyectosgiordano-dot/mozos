@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mozo English — libreta de servicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #efe8d6;
+    --paper-2: #e6dcc2;
+    --ink: #221d15;
+    --ink-soft: #55503f;
+    --wine: #7a2038;
+    --wine-dark: #591629;
+    --brass: #a97a25;
+    --brass-light: #cfa952;
+    --sage: #3f6b4c;
+    --stamp: #b23a2e;
+    --line: rgba(34,29,21,0.18);
+    --shadow: rgba(34,29,21,0.22);
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    color-scheme: light;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --paper: #1d1a15;
+      --paper-2: #262119;
+      --ink: #ece4d2;
+      --ink-soft: #b8ae94;
+      --line: rgba(236,228,210,0.16);
+      --shadow: rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #1d1a15;
+    --paper-2: #262119;
+    --ink: #ece4d2;
+    --ink-soft: #b8ae94;
+    --line: rgba(236,228,210,0.16);
+    --shadow: rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height:100vh;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(34,29,21,0.028) 28px);
+  }
+  a{color:var(--wine);}
+  button{font-family:inherit;}
+  .wrap{max-width: 780px; margin: 0 auto; padding: 0 18px 64px;}
+
+  /* ---------- Header: order-pad top ---------- */
+  header.pad-header{
+    background: var(--wine);
+    color: #f6efe0;
+    padding: 22px 18px 30px;
+    position: relative;
+  }
+  .pad-header-inner{max-width:780px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+  .brandblock h1{
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: 30px;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brandblock p{
+    margin:4px 0 0;
+    font-size:12.5px;
+    color:#e8d6c9;
+    font-family: var(--font-mono);
+  }
+  .badges{display:flex; gap:10px; flex-shrink:0;}
+  .badge{
+    background: rgba(246,239,224,0.12);
+    border: 1px solid rgba(246,239,224,0.35);
+    border-radius: 3px;
+    padding: 7px 10px;
+    text-align:center;
+    min-width:58px;
+  }
+  .badge .n{font-family:var(--font-display); font-size:19px; font-weight:600; display:block; line-height:1;}
+  .badge .l{font-size:9.5px; color:#e8d6c9; display:block; margin-top:3px;}
+  .tear{
+    position:absolute; left:0; right:0; bottom:-1px; height:12px;
+    background-image: linear-gradient(135deg, var(--paper) 50%, transparent 50%), linear-gradient(45deg, var(--paper) 50%, transparent 50%);
+    background-size: 16px 16px;
+    background-position: bottom;
+    background-repeat: repeat-x;
+  }
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{
+    display:flex; gap:2px; overflow-x:auto;
+    margin: 22px 0 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs button{
+    background:none; border:none; cursor:pointer;
+    padding: 10px 13px 12px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space:nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom:-1px;
+  }
+  nav.tabs button.active{
+    color: var(--ink);
+    border-bottom-color: var(--brass);
+    font-weight:700;
+  }
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  h2.section-title{
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  p.section-sub{
+    margin: 0 0 18px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    max-width: 60ch;
+  }
+
+  /* ---------- Ticket card ---------- */
+  .ticket{
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px 16px 14px;
+    margin-bottom: 14px;
+    position: relative;
+    box-shadow: 0 1px 0 var(--shadow);
+  }
+  .ticket::before{
+    content:"";
+    position:absolute; top:0; left:14px; right:14px; height:0;
+    border-top: 1px dashed var(--line);
+  }
+  .ticket-no{
+    font-size: 10.5px; color: var(--ink-soft); letter-spacing:0.5px;
+  }
+  .ticket-cat{
+    font-family: var(--font-display); font-weight:600; font-size:16px; margin: 2px 0 10px;
+  }
+  .level-tag{
+    display:inline-block; font-size:10px; padding:2px 7px; border-radius:2px;
+    border:1px solid currentColor; margin-left:8px; vertical-align:1px;
+  }
+  .level-tag.basico{color:var(--sage);}
+  .level-tag.intermedio{color:var(--brass);}
+  .level-tag.avanzado{color:var(--wine);}
+
+  .line{
+    display:flex; gap:10px; padding: 8px 0; border-top: 1px dashed var(--line);
+  }
+  .line:first-of-type{border-top:none;}
+  .who{
+    width: 56px; flex-shrink:0; font-size: 10.5px; color: var(--ink-soft); padding-top:3px;
+  }
+  .speech{flex:1; min-width:0;}
+  .en{font-size:14.5px; margin:0;}
+  .es{font-size:12.5px; color: var(--ink-soft); margin:3px 0 0;}
+  .ph{font-size:11.5px; color: var(--brass); margin:3px 0 0; font-style:italic;}
+  .line-controls{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 6px 11px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: transform 0.08s ease;
+  }
+  .btn:active{transform: translateY(1px);}
+  .btn.ghost{
+    background: transparent; color: var(--ink); border: 1px solid var(--line);
+  }
+  .btn.brass{background: var(--brass); color: #241a05;}
+  .btn.wine{background: var(--wine); color: #f6efe0;}
+  .btn.sage{background: var(--sage); color: #f6efe0;}
+  .btn.stamp{background: var(--stamp); color: #fbe9e6;}
+  .btn[disabled]{opacity:0.4; cursor:not-allowed;}
+  .btn.sm{padding:4px 8px; font-size:10.5px;}
+
+  /* ---------- Accordion (Frases) ---------- */
+  .accordion-head{
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; padding: 13px 4px; border-bottom: 1px solid var(--line);
+  }
+  .accordion-head h3{
+    font-family: var(--font-display); font-weight:600; font-size:16px; margin:0;
+  }
+  .accordion-head .meta{font-size:11px; color:var(--ink-soft);}
+  .accordion-body{display:none; padding: 4px 0 14px;}
+  .accordion-body.open{display:block;}
+  .accordion-chevron{font-size:12px; color:var(--ink-soft);}
+
+  /* ---------- Audio mode ---------- */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  select{
+    font-family: var(--font-mono); font-size:12px; padding:6px 8px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper);
+    color:var(--ink);
+  }
+  .speed-toggle{display:inline-flex; border:1px solid var(--line); border-radius:2px; overflow:hidden;}
+  .speed-toggle button{
+    background:var(--paper); border:none; padding:6px 10px; font-size:11px; cursor:pointer; color:var(--ink-soft);
+  }
+  .speed-toggle button.active{background:var(--brass); color:#241a05; font-weight:700;}
+
+  /* ---------- Conversation mode ---------- */
+  .convo-stage{
+    background: var(--paper-2); border:1px solid var(--line); border-radius:3px; padding:18px; margin-bottom:16px;
+  }
+  .convo-client{
+    display:flex; gap:10px; margin-bottom:14px;
+  }
+  .convo-avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--wine); color:#f6efe0;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; flex-shrink:0;
+  }
+  .convo-bubble{
+    background: var(--paper); border:1px solid var(--line); border-radius: 3px; padding:10px 12px; flex:1;
+  }
+  textarea#convoInput{
+    width:100%; font-family:var(--font-mono); font-size:14px; padding:10px; border:1px solid var(--line);
+    border-radius:2px; background:var(--paper); color:var(--ink); resize:vertical; min-height:52px;
+  }
+  .diff-ok{color:var(--sage); font-weight:700;}
+  .diff-miss{color:var(--stamp); text-decoration: underline wavy;}
+  .feedback-box{margin-top:12px; padding:10px 12px; border-left:3px solid var(--brass); background:rgba(169,122,37,0.08); font-size:13px;}
+  .feedback-box.good{border-left-color:var(--sage); background:rgba(63,107,76,0.08);}
+  .feedback-box.bad{border-left-color:var(--stamp); background:rgba(178,58,46,0.08);}
+
+  /* ---------- Progress ---------- */
+  .stat-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+  .stat{
+    flex:1; min-width:110px; background:var(--paper-2); border:1px solid var(--line); border-radius:3px; padding:12px;
+    text-align:center;
+  }
+  .stat .n{font-family:var(--font-display); font-size:24px; font-weight:600;}
+  .stat .l{font-size:10.5px; color:var(--ink-soft); margin-top:2px;}
+  .bar-row{margin-bottom:12px;}
+  .bar-row .lbl{display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;}
+  .bar-track{height:8px; background:var(--paper-2); border:1px solid var(--line); border-radius:2px; overflow:hidden;}
+  .bar-fill{height:100%; background:var(--sage);}
+
+  .empty-note{color:var(--ink-soft); font-size:13px; padding:20px 4px; text-align:center;}
+
+  footer{margin-top:30px; text-align:center; font-size:11px; color:var(--ink-soft);}
+
+  @media (prefers-reduced-motion: reduce){ .btn{transition:none;} }
+
+  :focus-visible{outline:2px solid var(--brass); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<header class="pad-header">
+  <div class="pad-header-inner">
+    <div class="brandblock">
+      <h1>Mozo English</h1>
+      <p>libreta de práctica — servicio de mesa en inglés</p>
+    </div>
+    <div class="badges">
+      <div class="badge"><span class="n" id="hdrStreak">0</span><span class="l">racha</span></div>
+      <div class="badge"><span class="n" id="hdrPoints">0</span><span class="l">puntos</span></div>
+      <div class="badge"><span class="n" id="hdrLevel">B</span><span class="l">nivel</span></div>
+    </div>
+  </div>
+  <div class="tear"></div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button data-view="plan" class="active">Plan de hoy</button>
+    <button data-view="frases">Frases por situación</button>
+    <button data-view="audio">Modo audio</button>
+    <button data-view="convo">Modo conversación</button>
+    <button data-view="progreso">Progreso</button>
+  </nav>
+
+  <!-- PLAN DE HOY -->
+  <section class="view active" id="view-plan">
+    <h2 class="section-title">Plan de hoy</h2>
+    <p class="section-sub">Cinco frases nuevas y el repaso del día. Marcá cada una cuando la practiques para avanzar de nivel.</p>
+    <h3 style="font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); text-transform:none; margin:18px 0 8px;">Frases nuevas</h3>
+    <div id="planNew"></div>
+    <h3 style="font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); margin:22px 0 8px;">Repaso pendiente</h3>
+    <div id="planReview"></div>
+  </section>
+
+  <!-- FRASES POR SITUACION -->
+  <section class="view" id="view-frases">
+    <h2 class="section-title">Frases por situación</h2>
+    <p class="section-sub">Las doce etapas del servicio, de la llegada del cliente hasta que se retira. Cada una con nivel básico, intermedio y avanzado.</p>
+    <div id="accordionList"></div>
+  </section>
+
+  <!-- MODO AUDIO -->
+  <section class="view" id="view-audio">
+    <h2 class="section-title">Modo audio</h2>
+    <p class="section-sub">Escuchá cada frase, elegí la velocidad y repetila las veces que necesites.</p>
+    <div class="filters">
+      <select id="audioCatFilter"></select>
+      <select id="audioLevelFilter">
+        <option value="">Todos los niveles</option>
+        <option value="basico">Básico</option>
+        <option value="intermedio">Intermedio</option>
+        <option value="avanzado">Avanzado</option>
+      </select>
+      <div class="speed-toggle" id="speedToggle">
+        <button data-speed="0.7" class="active">Lenta</button>
+        <button data-speed="1">Normal</button>
+      </div>
+    </div>
+    <div id="audioList"></div>
+  </section>
+
+  <!-- MODO CONVERSACION -->
+  <section class="view" id="view-convo">
+    <h2 class="section-title">Modo conversación</h2>
+    <p class="section-sub">La app hace de cliente. Escuchá o leé su frase, respondé como lo harías en el salón, y compará con la respuesta sugerida.</p>
+    <div class="filters">
+      <select id="convoCatFilter"></select>
+      <select id="convoLevelFilter">
+        <option value="">Todos los niveles</option>
+        <option value="basico">Básico</option>
+        <option value="intermedio">Intermedio</option>
+        <option value="avanzado">Avanzado</option>
+      </select>
+      <button class="btn ghost" id="convoNewBtn">Nueva situación</button>
+    </div>
+    <div class="convo-stage" id="convoStage"></div>
+  </section>
+
+  <!-- PROGRESO -->
+  <section class="view" id="view-progreso">
+    <h2 class="section-title">Progreso</h2>
+    <p class="section-sub">Tu avance por etapa del servicio. El nivel general sube cuando dominás la mayoría de una etapa.</p>
+    <div class="stat-row" id="statRow"></div>
+    <div id="progressBars"></div>
+  </section>
+
+  <footer>El progreso se guarda en este navegador. Contame qué querés ajustar y lo vamos afinando juntos.</footer>
+</div>
+
+<script>
+/* =========================================================
+   DATOS: 12 etapas del servicio x 3 niveles = 36 diálogos
+   ========================================================= */
+const CATEGORIES = [
+  {id:'greeting', label:'Recibir al cliente'},
+  {id:'seating_wait', label:'Manejar la espera y ubicar la mesa'},
+  {id:'reservations', label:'Tomar reservas'},
+  {id:'drinks', label:'Ofrecer bebidas'},
+  {id:'order', label:'Tomar el pedido'},
+  {id:'dishes', label:'Explicar platos e ingredientes'},
+  {id:'allergies', label:'Preguntar por alergias'},
+  {id:'recommendations', label:'Recomendar platos del chef'},
+  {id:'complaints', label:'Atender reclamos'},
+  {id:'dessert', label:'Ofrecer postre o café'},
+  {id:'billing', label:'Cobrar y dividir la cuenta'},
+  {id:'farewell', label:'Despedirse'},
+];
+const LEVELS = ['basico','intermedio','avanzado'];
+const LEVEL_LABEL = {basico:'Básico', intermedio:'Intermedio', avanzado:'Avanzado'};
+
+const DIALOGUES = [
+{id:'greeting-basico', category:'greeting', level:'basico',
+  client:{en:'Good evening. Do you have a table for two?', es:'Buenas noches. ¿Tienen una mesa para dos?'},
+  waiter:{en:'Good evening! Yes, follow me, please.', es:'¡Buenas noches! Sí, síganme, por favor.', ph:'gud ív-ning! yes, fólou mi, plís.'}},
+{id:'greeting-intermedio', category:'greeting', level:'intermedio',
+  client:{en:"Hi, we don't have a reservation, is that okay?", es:'Hola, no tenemos reserva, ¿está bien igual?'},
+  waiter:{en:"That's no problem at all. Give me one moment to check.", es:'No hay ningún problema. Dame un momento para revisar.', ph:'dats nóu práblem at ol. guiv mi uán móument tu chek.'}},
+{id:'greeting-avanzado', category:'greeting', level:'avanzado',
+  client:{en:"We're actually celebrating an anniversary tonight.", es:'En realidad estamos festejando un aniversario esta noche.'},
+  waiter:{en:"Congratulations! I'll make sure to let the kitchen know, so we can make tonight special for you.", es:'¡Felicitaciones! Le voy a avisar a la cocina para hacer que esta noche sea especial para ustedes.', ph:'congrachuléishons! áil méik shur tu let de kíchen nóu, so uí can méik tunáit spéshal for iú.'}},
+
+{id:'seating_wait-basico', category:'seating_wait', level:'basico',
+  client:{en:'How long is the wait?', es:'¿Cuánto es la espera?'},
+  waiter:{en:'About fifteen minutes. Would you like to wait at the bar?', es:'Unos quince minutos. ¿Les gustaría esperar en la barra?', ph:'abáut fiftín mínits. wud iu láik tu ueit at de bar?'}},
+{id:'seating_wait-intermedio', category:'seating_wait', level:'intermedio',
+  client:{en:'Can we sit outside instead?', es:'¿Podemos sentarnos afuera en vez de adentro?'},
+  waiter:{en:'Of course, let me check if a table is free on the terrace.', es:'Por supuesto, déjeme ver si hay una mesa libre en la terraza.', ph:'of córs, let mi chek if a téibol is fri on de téras.'}},
+{id:'seating_wait-avanzado', category:'seating_wait', level:'avanzado',
+  client:{en:"We've been waiting for almost forty minutes.", es:'Estamos esperando hace casi cuarenta minutos.'},
+  waiter:{en:"I'm really sorry about the delay. Let me check with the kitchen and get you seated right away.", es:'Lamento mucho la demora. Voy a hablar con la cocina y los siento de inmediato.', ph:'áim ríli sórri abáut de diléi. let mi chek uíd de kíchen and guet iu sítid ráit auéi.'}},
+
+{id:'reservations-basico', category:'reservations', level:'basico',
+  client:{en:"I'd like to make a reservation for tomorrow.", es:'Quisiera hacer una reserva para mañana.'},
+  waiter:{en:'Sure, what time would you like to come?', es:'Claro, ¿a qué hora les gustaría venir?', ph:'shur, uát táim wud iu láik tu cam?'}},
+{id:'reservations-intermedio', category:'reservations', level:'intermedio',
+  client:{en:'Is it possible to change my reservation to nine pm?', es:'¿Es posible cambiar mi reserva a las nueve de la noche?'},
+  waiter:{en:"Let me check... Yes, that works. I've moved it to nine pm.", es:'Déjeme ver... Sí, se puede. Ya la cambié a las nueve.', ph:'let mi chek... yes, dat uérks. áiv múvd it tu náin pi-em.'}},
+{id:'reservations-avanzado', category:'reservations', level:'avanzado',
+  client:{en:"We're a group of twelve, do you have space for us this Saturday?", es:'Somos un grupo de doce, ¿tienen lugar para nosotros este sábado?'},
+  waiter:{en:"For a group that size, I'd recommend booking the back room. I'll set that up and send you a confirmation.", es:'Para un grupo de ese tamaño, recomendaría reservar el salón del fondo. Lo organizo y les mando una confirmación.', ph:'for a grup dat sáiz, áid rekoménd búking de bak rum. áil set dat ap and send iu a confirméishon.'}},
+
+{id:'drinks-basico', category:'drinks', level:'basico',
+  client:{en:'Could we see the menu?', es:'¿Podemos ver el menú?'},
+  waiter:{en:'Of course. Here are the menus. Would you like something to drink?', es:'Por supuesto. Aquí tienen los menús. ¿Les gustaría tomar algo?', ph:'of córs. jíar ar de méniuz. wud iu láik sámzing tu drink?'}},
+{id:'drinks-intermedio', category:'drinks', level:'intermedio',
+  client:{en:'What wines would you recommend with the steak?', es:'¿Qué vinos recomendaría con el bife?'},
+  waiter:{en:"I'd suggest our Malbec, it pairs really well with red meat.", es:'Le sugeriría nuestro Malbec, marida muy bien con carnes rojas.', ph:'áid sadyést áur malbéc, it péars ríli uél uíd red mit.'}},
+{id:'drinks-avanzado', category:'drinks', level:'avanzado',
+  client:{en:"Do you have anything non-alcoholic that isn't just soda?", es:'¿Tienen algo sin alcohol que no sea solo gaseosa?'},
+  waiter:{en:'We have a house-made lemonade and a ginger iced tea, both are very refreshing.', es:'Tenemos una limonada casera y un té helado de jengibre, los dos son muy refrescantes.', ph:'uí jav a jáus-méid lémonéid and a yínyer áist ti, bóuz ar véri rifréshing.'}},
+
+{id:'order-basico', category:'order', level:'basico',
+  client:{en:"I'll have the grilled chicken, please.", es:'Voy a pedir el pollo a la parrilla, por favor.'},
+  waiter:{en:'Great choice. And for you, ma\u2019am?', es:'Muy buena elección. ¿Y para usted, señora?', ph:'gréit chóis. and for iu, mam?'}},
+{id:'order-intermedio', category:'order', level:'intermedio',
+  client:{en:'Can I get the steak, but without the sauce?', es:'¿Me puede traer el bife, pero sin la salsa?'},
+  waiter:{en:"No problem, I'll ask the kitchen to leave the sauce on the side.", es:'Sin problema, le pido a la cocina que traiga la salsa aparte.', ph:'nóu práblem, áil ask de kíchen tu liv de sos on de sáid.'}},
+{id:'order-avanzado', category:'order', level:'avanzado',
+  client:{en:"We're still deciding, could you give us a few more minutes?", es:'Todavía estamos decidiendo, ¿nos da unos minutos más?'},
+  waiter:{en:"Take your time, I'll come back in a few minutes.", es:'Tómense su tiempo, vuelvo en unos minutos.', ph:'téik iur táim, áil cam bak in a fiú mínits.'}},
+
+{id:'dishes-basico', category:'dishes', level:'basico',
+  client:{en:"What's in this dish?", es:'¿Qué lleva este plato?'},
+  waiter:{en:'It\u2019s grilled salmon with vegetables and a lemon sauce.', es:'Es salmón a la parrilla con vegetales y salsa de limón.', ph:'its gríld sámon uíd véyetabols and a lémon sos.'}},
+{id:'dishes-intermedio', category:'dishes', level:'intermedio',
+  client:{en:'Is this dish spicy?', es:'¿Este plato es picante?'},
+  waiter:{en:"It's mild, but I can ask the kitchen to make it spicier if you'd like.", es:'Es suave, pero puedo pedirle a la cocina que lo haga más picante si quiere.', ph:'its máild, bat ái can ask de kíchen tu méik it spáisier if iud láik.'}},
+{id:'dishes-avanzado', category:'dishes', level:'avanzado',
+  client:{en:'What makes this dish different from a regular milanesa?', es:'¿Qué diferencia tiene este plato de una milanesa común?'},
+  waiter:{en:"This one is stuffed with ham and cheese, then breaded and fried, so it's a bit richer.", es:'Esta está rellena de jamón y queso, después empanada y frita, así que es un poco más contundente.', ph:'dis uán is staft uíd jam and chiz, den brédid and fráid, so its a bit rícher.'}},
+
+{id:'allergies-basico', category:'allergies', level:'basico',
+  client:{en:"I'm allergic to peanuts.", es:'Soy alérgico al maní.'},
+  waiter:{en:"Thank you for letting me know, I'll make sure the kitchen is careful.", es:'Gracias por avisarme, me voy a asegurar de que la cocina tenga cuidado.', ph:'zenk iu for létin mi nóu, áil méik shur de kíchen is kérful.'}},
+{id:'allergies-intermedio', category:'allergies', level:'intermedio',
+  client:{en:'Does this sauce contain dairy?', es:'¿Esta salsa tiene lácteos?'},
+  waiter:{en:'Yes, it has cream in it. I can suggest a dairy-free option instead.', es:'Sí, lleva crema. Le puedo sugerir una opción sin lácteos.', ph:'yes, it jas crim in it. ái can sadyést a déri-frí ópshon insted.'}},
+{id:'allergies-avanzado', category:'allergies', level:'avanzado',
+  client:{en:'I have a severe shellfish allergy, can you guarantee there\u2019s no cross-contamination?', es:'Tengo una alergia grave a los mariscos, ¿me pueden garantizar que no hay contaminación cruzada?'},
+  waiter:{en:"I understand, I'll speak directly with the chef to make sure your dish is prepared separately.", es:'Entiendo, voy a hablar directamente con el chef para que su plato se prepare por separado.', ph:'ái anderstánd, áil spik dairéctli uíd de shef tu méik shur iur dish is prepérd séparetli.'}},
+
+{id:'recommendations-basico', category:'recommendations', level:'basico',
+  client:{en:'What do you recommend?', es:'¿Qué me recomienda?'},
+  waiter:{en:'Our specialty tonight is the trout with almonds.', es:'Nuestra especialidad de esta noche es la trucha con almendras.', ph:'áur spéshalti tunáit is de tráut uíd álmonds.'}},
+{id:'recommendations-intermedio', category:'recommendations', level:'intermedio',
+  client:{en:"What's the most popular dish here?", es:'¿Cuál es el plato más pedido acá?'},
+  waiter:{en:'Most guests love our beef tenderloin with mushroom sauce.', es:'A la mayoría de los clientes les encanta nuestro lomo con salsa de hongos.', ph:'móust guests lav áur bif ténderloin uíd máshrum sos.'}},
+{id:'recommendations-avanzado', category:'recommendations', level:'avanzado',
+  client:{en:'We want to try something typical from the region.', es:'Queremos probar algo típico de la región.'},
+  waiter:{en:"Then I'd suggest our surubí with chimichurri, it's a local favorite.", es:'Entonces le sugiero nuestro surubí con chimichurri, es un favorito de la zona.', ph:'den áid sadyést áur surubí uíd chimichúrri, its a lóukal féivorit.'}},
+
+{id:'complaints-basico', category:'complaints', level:'basico',
+  client:{en:"This isn't what I ordered.", es:'Esto no es lo que pedí.'},
+  waiter:{en:"I'm so sorry, let me fix that right away.", es:'Discúlpeme, lo soluciono ahora mismo.', ph:'áim so sórri, let mi fiks dat ráit auéi.'}},
+{id:'complaints-intermedio', category:'complaints', level:'intermedio',
+  client:{en:'The food is a bit cold.', es:'La comida está un poco fría.'},
+  waiter:{en:"I apologize for that, I'll bring you a fresh, hot plate immediately.", es:'Le pido disculpas, le traigo un plato nuevo y caliente enseguida.', ph:'ái apáloyáis for dat, áil bring iu a fresh, jat pléit imídiatli.'}},
+{id:'complaints-avanzado', category:'complaints', level:'avanzado',
+  client:{en:"We've been waiting a long time and we're not happy with the service.", es:'Hace rato que esperamos y no estamos contentos con el servicio.'},
+  waiter:{en:'I completely understand your frustration, and I apologize sincerely. Let me speak with the manager and make this right for you.', es:'Entiendo completamente su malestar y les pido disculpas sinceras. Voy a hablar con el encargado para solucionarlo.', ph:'ái compl ítli anderstánd iur frastréishon, and ái apáloyáis sinsírli. let mi spik uíd de mánayer and méik dis ráit for iu.'}},
+
+{id:'dessert-basico', category:'dessert', level:'basico',
+  client:{en:'Do you have dessert?', es:'¿Tienen postre?'},
+  waiter:{en:'Yes, would you like to see the dessert menu?', es:'Sí, ¿le gustaría ver la carta de postres?', ph:'yes, wud iu láik tu si de disért méniu?'}},
+{id:'dessert-intermedio', category:'dessert', level:'intermedio',
+  client:{en:"What desserts don't have chocolate?", es:'¿Qué postres no llevan chocolate?'},
+  waiter:{en:'We have a lemon tart and a flan, both without chocolate.', es:'Tenemos una tarta de limón y un flan, ninguno de los dos lleva chocolate.', ph:'uí jav a lémon tart and a flan, bóuz uidáut chóclet.'}},
+{id:'dessert-avanzado', category:'dessert', level:'avanzado',
+  client:{en:'Could we split one dessert between the two of us?', es:'¿Podemos compartir un postre entre los dos?'},
+  waiter:{en:"Of course, I'll bring two spoons and an extra plate.", es:'Por supuesto, le traigo dos cucharas y un plato extra.', ph:'of córs, áil bring tu spuns and an ékstra pléit.'}},
+
+{id:'billing-basico', category:'billing', level:'basico',
+  client:{en:'Can we have the check, please?', es:'¿Nos trae la cuenta, por favor?'},
+  waiter:{en:"Of course, I'll bring it right away.", es:'Por supuesto, se la traigo enseguida.', ph:'of córs, áil bring it ráit auéi.'}},
+{id:'billing-intermedio', category:'billing', level:'intermedio',
+  client:{en:'Could we split the bill in two?', es:'¿Podemos dividir la cuenta en dos?'},
+  waiter:{en:"Sure, I'll bring two separate checks.", es:'Claro, le traigo dos cuentas separadas.', ph:'shur, áil bring tu séparet cheks.'}},
+{id:'billing-avanzado', category:'billing', level:'avanzado',
+  client:{en:'Do you accept international cards, and is there a service charge?', es:'¿Aceptan tarjetas internacionales y hay algún cargo por servicio?'},
+  waiter:{en:'Yes, we accept international cards, and the service charge is optional, it\u2019s up to you.', es:'Sí, aceptamos tarjetas internacionales, y el cargo por servicio es opcional, queda a su criterio.', ph:'yes, uí aksépt internáshonal cards, and de sérvis charch is ópshonal, its ap tu iu.'}},
+
+{id:'farewell-basico', category:'farewell', level:'basico',
+  client:{en:'Thank you, everything was great.', es:'Gracias, todo estuvo genial.'},
+  waiter:{en:'Thank you so much, have a wonderful night!', es:'Muchas gracias a ustedes, ¡que tengan una excelente noche!', ph:'zenk iu so mach, jav a uánderful náit!'}},
+{id:'farewell-intermedio', category:'farewell', level:'intermedio',
+  client:{en:"We'll definitely come back.", es:'Seguro que volvemos.'},
+  waiter:{en:"We'd love to have you again, take care!", es:'Nos encantaría recibirlos de nuevo, ¡cuídense!', ph:'uid lav tu jav iu aguén, téik ker!'}},
+{id:'farewell-avanzado', category:'farewell', level:'avanzado',
+  client:{en:'Please pass our compliments to the chef.', es:'Por favor, felicite al chef de nuestra parte.'},
+  waiter:{en:'I certainly will, thank you for celebrating with us tonight, see you soon!', es:'Por supuesto que sí, gracias por festejar con nosotros esta noche, ¡hasta pronto!', ph:'ái sértenli uíl, zenk iu for celebréiting uíd as tunáit, si iu sun!'}},
+];
+
+// Orden global: agrupado por nivel (todo básico primero) y dentro de cada nivel, por etapa del servicio.
+const ORDERED_IDS = [];
+LEVELS.forEach(lv => {
+  CATEGORIES.forEach(cat => {
+    const d = DIALOGUES.find(x => x.category === cat.id && x.level === lv);
+    if (d) ORDERED_IDS.push(d.id);
+  });
+});
+function byId(id){ return DIALOGUES.find(d => d.id === id); }
+function catLabel(id){ return (CATEGORIES.find(c=>c.id===id)||{}).label || id; }
+
+/* =========================================================
+   ESTADO / localStorage
+   ========================================================= */
+const STORE_KEY = 'mozoEnglishState_v1';
+const INTERVALS = [1,2,4,8,16]; // días entre repasos según "caja" (0-4)
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function addDays(dateStr, n){
+  const d = new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+
+function loadState(){
+  let s;
+  try{ s = JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ s = null; }
+  if(!s){
+    s = {points:0, streak:0, lastActiveDate:null, today:null, todayNewIds:[], todayReviewIds:[], progress:{}};
+  }
+  ensureToday(s);
+  return s;
+}
+function saveState(s){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){ /* almacenamiento no disponible */ }
+}
+function currentLevel(s){
+  for(const lv of LEVELS){
+    const ids = ORDERED_IDS.filter(id => byId(id).level === lv);
+    const mastered = ids.filter(id => s.progress[id] && s.progress[id].box >= 2).length;
+    if(ids.length === 0) continue;
+    if(mastered / ids.length < 0.7) return lv;
+  }
+  return 'avanzado';
+}
+function ensureToday(s){
+  const t = todayStr();
+  if(s.today === t) return;
+  s.today = t;
+  const lv = currentLevel(s);
+  const lvIndex = LEVELS.indexOf(lv);
+  // frases nuevas: primero del nivel actual, si no alcanzan, seguir con el siguiente
+  const notStarted = ORDERED_IDS.filter(id => !s.progress[id]);
+  notStarted.sort((a,b) => {
+    const la = LEVELS.indexOf(byId(a).level), lb = LEVELS.indexOf(byId(b).level);
+    const da = Math.abs(la-lvIndex), db = Math.abs(lb-lvIndex);
+    if(da !== db) return da-db;
+    return ORDERED_IDS.indexOf(a) - ORDERED_IDS.indexOf(b);
+  });
+  s.todayNewIds = notStarted.slice(0,5);
+  s.todayReviewIds = Object.keys(s.progress).filter(id => {
+    return s.progress[id].nextReview <= t && !s.todayNewIds.includes(id);
+  });
+}
+function registerActivity(s){
+  const t = todayStr();
+  if(s.lastActiveDate === t) { /* ya contado hoy */ }
+  else if(s.lastActiveDate === addDays(t,-1)) { s.streak += 1; s.lastActiveDate = t; }
+  else { s.streak = 1; s.lastActiveDate = t; }
+}
+function markPracticed(id, quality){
+  // quality: 'good' -> avanza de caja, 'again' -> vuelve a caja 0
+  const s = state;
+  registerActivity(s);
+  const p = s.progress[id] || {box:-1, timesSeen:0};
+  p.timesSeen = (p.timesSeen||0) + 1;
+  if(quality === 'good'){
+    p.box = Math.min((p.box<0?0:p.box+1), INTERVALS.length-1);
+    s.points += 5;
+  } else {
+    p.box = 0;
+    s.points += 2;
+  }
+  p.nextReview = addDays(todayStr(), INTERVALS[p.box]);
+  s.progress[id] = p;
+  s.todayNewIds = s.todayNewIds.filter(x=>x!==id);
+  s.todayReviewIds = s.todayReviewIds.filter(x=>x!==id);
+  saveState(s);
+  renderHeader();
+}
+
+let state = loadState();
+saveState(state);
+
+/* =========================================================
+   AUDIO: speechSynthesis
+   ========================================================= */
+let voices = [];
+function loadVoices(){ voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; }
+if('speechSynthesis' in window){
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+function pickVoice(){
+  return voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang && v.lang.startsWith('en')) || null;
+}
+function speak(text, rate){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = rate || 1;
+  const v = pickVoice();
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+/* =========================================================
+   RENDER: header
+   ========================================================= */
+function renderHeader(){
+  document.getElementById('hdrStreak').textContent = state.streak;
+  document.getElementById('hdrPoints').textContent = state.points;
+  const lv = currentLevel(state);
+  document.getElementById('hdrLevel').textContent = lv==='basico'?'B':lv==='intermedio'?'I':'A';
+}
+
+/* =========================================================
+   RENDER: Plan de hoy
+   ========================================================= */
+function phraseTicketHTML(d, ticketNo, opts){
+  opts = opts || {};
+  const showActions = opts.showActions !== false;
+  return `
+  <div class="ticket" data-id="${d.id}">
+    <div class="ticket-no">Comanda N.º ${ticketNo}</div>
+    <div class="ticket-cat">${catLabel(d.category)}<span class="level-tag ${d.level}">${LEVEL_LABEL[d.level]}</span></div>
+    <div class="line">
+      <div class="who">Cliente</div>
+      <div class="speech">
+        <p class="en">${d.client.en}</p>
+        <p class="es">${d.client.es}</p>
+        <div class="line-controls">
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',0.85)">▶ escuchar</button>
+        </div>
+      </div>
+    </div>
+    <div class="line">
+      <div class="who">Vos (mozo)</div>
+      <div class="speech">
+        <p class="en">${d.waiter.en}</p>
+        <p class="es">${d.waiter.es}</p>
+        <p class="ph">${d.waiter.ph}</p>
+        <div class="line-controls">
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',0.7)">▶ lenta</button>
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',1)">▶ normal</button>
+        </div>
+      </div>
+    </div>
+    ${showActions ? `
+    <div class="line-controls" style="margin-top:10px;">
+      <button class="btn sage sm" onclick="markPracticed('${d.id}','good'); renderPlan();">La sé bien</button>
+      <button class="btn stamp sm" onclick="markPracticed('${d.id}','again'); renderPlan();">Necesito repasarla</button>
+    </div>` : ``}
+  </div>`;
+}
+function escAttr(s){ return s.replace(/'/g,"\\'"); }
+
+function renderPlan(){
+  ensureToday(state); saveState(state);
+  renderHeader();
+  const newEl = document.getElementById('planNew');
+  const revEl = document.getElementById('planReview');
+  if(state.todayNewIds.length === 0){
+    newEl.innerHTML = `<div class="empty-note">Ya completaste todas las frases disponibles por ahora. Contame y sumamos más.</div>`;
+  } else {
+    newEl.innerHTML = state.todayNewIds.map((id,i)=>phraseTicketHTML(byId(id), i+1)).join('');
+  }
+  if(state.todayReviewIds.length === 0){
+    revEl.innerHTML = `<div class="empty-note">No tenés repasos pendientes hoy.</div>`;
+  } else {
+    revEl.innerHTML = state.todayReviewIds.map((id,i)=>phraseTicketHTML(byId(id), 100+i)).join('');
+  }
+}
+
+/* =========================================================
+   RENDER: Frases por situación (acordeón)
+   ========================================================= */
+function renderAccordion(){
+  const el = document.getElementById('accordionList');
+  el.innerHTML = CATEGORIES.map(cat => {
+    const dialogues = LEVELS.map(lv => DIALOGUES.find(d=>d.category===cat.id && d.level===lv)).filter(Boolean);
+    const body = dialogues.map((d,i)=>phraseTicketHTML(d, i+1, {showActions:true})).join('');
+    return `
+    <div class="accordion-item">
+      <div class="accordion-head" onclick="toggleAccordion('${cat.id}')">
+        <h3>${cat.label}</h3>
+        <span class="meta"><span class="accordion-chevron" id="chev-${cat.id}">＋</span></span>
+      </div>
+      <div class="accordion-body" id="acc-${cat.id}">${body}</div>
+    </div>`;
+  }).join('');
+}
+function toggleAccordion(catId){
+  const body = document.getElementById('acc-'+catId);
+  const chev = document.getElementById('chev-'+catId);
+  const open = body.classList.toggle('open');
+  chev.textContent = open ? '－' : '＋';
+}
+
+/* =========================================================
+   RENDER: Modo audio
+   ========================================================= */
+let audioSpeed = 0.7;
+function renderAudioFilters(){
+  const catSel = document.getElementById('audioCatFilter');
+  catSel.innerHTML = `<option value="">Todas las situaciones</option>` + CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  catSel.onchange = renderAudioList;
+  document.getElementById('audioLevelFilter').onchange = renderAudioList;
+  document.querySelectorAll('#speedToggle button').forEach(btn=>{
+    btn.onclick = () => {
+      document.querySelectorAll('#speedToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      audioSpeed = parseFloat(btn.dataset.speed);
+    };
+  });
+}
+function renderAudioList(){
+  const cat = document.getElementById('audioCatFilter').value;
+  const lv = document.getElementById('audioLevelFilter').value;
+  const items = DIALOGUES.filter(d => (!cat || d.category===cat) && (!lv || d.level===lv));
+  const el = document.getElementById('audioList');
+  if(items.length===0){ el.innerHTML = `<div class="empty-note">No hay frases con ese filtro.</div>`; return; }
+  el.innerHTML = items.map(d => `
+    <div class="ticket">
+      <div class="ticket-cat">${catLabel(d.category)}<span class="level-tag ${d.level}">${LEVEL_LABEL[d.level]}</span></div>
+      <p class="en">${d.waiter.en}</p>
+      <p class="es">${d.waiter.es}</p>
+      <p class="ph">${d.waiter.ph}</p>
+      <div class="line-controls">
+        <button class="btn brass sm" onclick="speak('${escAttr(d.waiter.en)}', audioSpeed)">▶ escuchar</button>
+        <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}', audioSpeed)">↻ repetir</button>
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   MODO CONVERSACIÓN
+   ========================================================= */
+let convoCurrent = null;
+function renderConvoFilters(){
+  const catSel = document.getElementById('convoCatFilter');
+  catSel.innerHTML = `<option value="">Cualquier situación</option>` + CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  document.getElementById('convoNewBtn').onclick = pickConvoDialogue;
+}
+function pickConvoDialogue(){
+  const cat = document.getElementById('convoCatFilter').value;
+  const lv = document.getElementById('convoLevelFilter').value;
+  const pool = DIALOGUES.filter(d => (!cat || d.category===cat) && (!lv || d.level===lv));
+  if(pool.length===0){ document.getElementById('convoStage').innerHTML = `<div class="empty-note">No hay diálogos con ese filtro.</div>`; return; }
+  convoCurrent = pool[Math.floor(Math.random()*pool.length)];
+  renderConvoStage();
+  speak(convoCurrent.client.en, 0.85);
+}
+function normalize(s){
+  return s.toLowerCase().replace(/[.,!?¿¡']/g,'').trim();
+}
+function scoreAnswer(user, target){
+  const tWords = normalize(target).split(/\s+/).filter(Boolean);
+  const uWords = new Set(normalize(user).split(/\s+/).filter(Boolean));
+  const matched = tWords.filter(w => uWords.has(w));
+  return {ratio: tWords.length? matched.length/tWords.length : 0, tWords, matchedSet:new Set(matched)};
+}
+function renderConvoStage(){
+  const el = document.getElementById('convoStage');
+  if(!convoCurrent){ el.innerHTML = `<div class="empty-note">Tocá "Nueva situación" para empezar a practicar.</div>`; return; }
+  const d = convoCurrent;
+  el.innerHTML = `
+    <div class="ticket-cat" style="margin-bottom:12px;">${catLabel(d.category)}<span class="level-tag ${d.level}">${LEVEL_LABEL[d.level]}</span></div>
+    <div class="convo-client">
+      <div class="convo-avatar">C</div>
+      <div class="convo-bubble">
+        <p class="en">${d.client.en}</p>
+        <p class="es">${d.client.es}</p>
+        <div class="line-controls">
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',0.85)">▶ escuchar otra vez</button>
+        </div>
+      </div>
+    </div>
+    <label style="font-size:12px; color:var(--ink-soft);">Tu respuesta como mozo:</label>
+    <textarea id="convoInput" placeholder="Escribí tu respuesta en inglés..."></textarea>
+    <div class="line-controls" style="margin-top:10px;">
+      <button class="btn wine sm" id="convoMicBtn">🎙 hablar</button>
+      <button class="btn brass sm" onclick="checkConvoAnswer()">Comparar mi respuesta</button>
+      <button class="btn ghost sm" onclick="revealConvoAnswer()">Ver respuesta sugerida</button>
+      <button class="btn ghost sm" onclick="pickConvoDialogue()">Otra situación</button>
+    </div>
+    <div id="convoFeedback"></div>
+  `;
+  setupMic();
+}
+function setupMic(){
+  const btn = document.getElementById('convoMicBtn');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ btn.disabled = true; btn.title = 'Tu navegador no soporta reconocimiento de voz. Podés escribir tu respuesta.'; return; }
+  btn.onclick = () => {
+    const rec = new SR();
+    rec.lang = 'en-US';
+    rec.onresult = (ev) => {
+      document.getElementById('convoInput').value = ev.results[0][0].transcript;
+    };
+    rec.onerror = () => {};
+    rec.start();
+  };
+}
+function checkConvoAnswer(){
+  const val = document.getElementById('convoInput').value;
+  const d = convoCurrent;
+  const {ratio, tWords, matchedSet} = scoreAnswer(val, d.waiter.en);
+  const fb = document.getElementById('convoFeedback');
+  const diffHTML = tWords.map(w => matchedSet.has(w) ? `<span class="diff-ok">${w}</span>` : `<span class="diff-miss">${w}</span>`).join(' ');
+  let cls, msg;
+  if(ratio >= 0.75){ cls='good'; msg='¡Muy bien! Tu respuesta funciona.'; markPracticed(d.id,'good'); }
+  else if(ratio >= 0.35){ cls=''; msg='Vas bien, pero te faltaron algunas palabras clave.'; markPracticed(d.id,'again'); }
+  else { cls='bad'; msg='Todavía no. Mirá la frase sugerida e intentá de nuevo.'; markPracticed(d.id,'again'); }
+  fb.innerHTML = `<div class="feedback-box ${cls}">
+    <p style="margin:0 0 6px;">${msg}</p>
+    <p style="margin:0; font-family:var(--font-mono);">Frase objetivo: ${diffHTML}</p>
+    <p class="es" style="margin-top:6px;">${d.waiter.es}</p>
+  </div>`;
+}
+function revealConvoAnswer(){
+  const d = convoCurrent;
+  const fb = document.getElementById('convoFeedback');
+  fb.innerHTML = `<div class="feedback-box">
+    <p class="en" style="margin:0;">${d.waiter.en}</p>
+    <p class="es" style="margin:4px 0;">${d.waiter.es}</p>
+    <p class="ph" style="margin:0;">${d.waiter.ph}</p>
+    <div class="line-controls" style="margin-top:8px;">
+      <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',0.7)">▶ escuchar lento</button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   RENDER: Progreso
+   ========================================================= */
+function renderProgress(){
+  const total = DIALOGUES.length;
+  const started = Object.keys(state.progress).length;
+  const mastered = Object.values(state.progress).filter(p=>p.box>=2).length;
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat"><span class="n">${state.points}</span><span class="l">puntos</span></div>
+    <div class="stat"><span class="n">${state.streak}</span><span class="l">racha (días)</span></div>
+    <div class="stat"><span class="n">${mastered}/${total}</span><span class="l">frases dominadas</span></div>
+    <div class="stat"><span class="n">${LEVEL_LABEL[currentLevel(state)]}</span><span class="l">nivel actual</span></div>
+  `;
+  const bars = CATEGORIES.map(cat => {
+    const ids = DIALOGUES.filter(d=>d.category===cat.id).map(d=>d.id);
+    const dom = ids.filter(id => state.progress[id] && state.progress[id].box>=2).length;
+    const pct = Math.round((dom/ids.length)*100);
+    return `<div class="bar-row">
+      <div class="lbl"><span>${cat.label}</span><span>${dom}/${ids.length}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('progressBars').innerHTML = bars;
+}
+
+/* =========================================================
+   TABS
+   ========================================================= */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='progreso') renderProgress();
+    if(btn.dataset.view==='plan') renderPlan();
+  });
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderHeader();
+renderPlan();
+renderAccordion();
+renderAudioFilters();
+renderAudioList();
+renderConvoFilters();
+renderConvoStage();
+</script>
+</body>
+</html>
