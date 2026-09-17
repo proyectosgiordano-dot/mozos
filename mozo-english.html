@@ -299,6 +299,7 @@
     <button data-view="audio">Modo audio</button>
     <button data-view="convo">Modo conversación</button>
     <button data-view="progreso">Progreso</button>
+    <button data-view="protocolo">Protocolo De La Fonte</button>
   </nav>
 
   <!-- PLAN DE HOY -->
@@ -331,7 +332,8 @@
         <option value="avanzado">Avanzado</option>
       </select>
       <div class="speed-toggle" id="speedToggle">
-        <button data-speed="0.7" class="active">Lenta</button>
+        <button data-speed="0.4">Muy lenta</button>
+        <button data-speed="0.55" class="active">Lenta</button>
         <button data-speed="1">Normal</button>
       </div>
     </div>
@@ -363,26 +365,39 @@
     <div id="progressBars"></div>
   </section>
 
+  <!-- PROTOCOLO DE LA FONTE -->
+  <section class="view" id="view-protocolo">
+    <h2 class="section-title">Protocolo De La Fonte</h2>
+    <p class="section-sub">La secuencia real del servicio de la casa, paso a paso, con una frase en inglés sugerida para ofrecer cada momento.</p>
+    <div id="protocolList"></div>
+  </section>
+
   <footer>El progreso se guarda en este navegador. Contame qué querés ajustar y lo vamos afinando juntos.</footer>
 </div>
 
 <script>
 /* =========================================================
-   DATOS: 12 etapas del servicio x 3 niveles = 36 diálogos
+   DATOS: 18 etapas del servicio x 3 niveles = 54 diálogos
    ========================================================= */
 const CATEGORIES = [
-  {id:'greeting', label:'Recibir al cliente'},
-  {id:'seating_wait', label:'Manejar la espera y ubicar la mesa'},
-  {id:'reservations', label:'Tomar reservas'},
-  {id:'drinks', label:'Ofrecer bebidas'},
-  {id:'order', label:'Tomar el pedido'},
+  {id:'greeting', label:'Recepción'},
+  {id:'reservations', label:'Reserva'},
+  {id:'seating_wait', label:'Ubicación en la mesa'},
+  {id:'menu', label:'Menú'},
   {id:'dishes', label:'Explicar platos e ingredientes'},
-  {id:'allergies', label:'Preguntar por alergias'},
-  {id:'recommendations', label:'Recomendar platos del chef'},
-  {id:'complaints', label:'Atender reclamos'},
-  {id:'dessert', label:'Ofrecer postre o café'},
-  {id:'billing', label:'Cobrar y dividir la cuenta'},
-  {id:'farewell', label:'Despedirse'},
+  {id:'drinks', label:'Bebidas'},
+  {id:'order', label:'Pedido'},
+  {id:'recommendations', label:'Recomendaciones'},
+  {id:'allergies', label:'Alergias / intolerancias'},
+  {id:'cooking_pref', label:'Preferencias de cocción'},
+  {id:'order_confirm', label:'Confirmación del pedido'},
+  {id:'table_followup', label:'Seguimiento de la mesa'},
+  {id:'complaints', label:'Problemas / reclamos'},
+  {id:'dessert', label:'Postre'},
+  {id:'coffee', label:'Café'},
+  {id:'billing', label:'Cuenta'},
+  {id:'payment', label:'Pago'},
+  {id:'farewell', label:'Despedida'},
 ];
 const LEVELS = ['basico','intermedio','avanzado'];
 const LEVEL_LABEL = {basico:'Básico', intermedio:'Intermedio', avanzado:'Avanzado'};
@@ -398,16 +413,6 @@ const DIALOGUES = [
   client:{en:"We're actually celebrating an anniversary tonight.", es:'En realidad estamos festejando un aniversario esta noche.'},
   waiter:{en:"Congratulations! I'll make sure to let the kitchen know, so we can make tonight special for you.", es:'¡Felicitaciones! Le voy a avisar a la cocina para hacer que esta noche sea especial para ustedes.', ph:'congrachuléishons! áil méik shur tu let de kíchen nóu, so uí can méik tunáit spéshal for iú.'}},
 
-{id:'seating_wait-basico', category:'seating_wait', level:'basico',
-  client:{en:'How long is the wait?', es:'¿Cuánto es la espera?'},
-  waiter:{en:'About fifteen minutes. Would you like to wait at the bar?', es:'Unos quince minutos. ¿Les gustaría esperar en la barra?', ph:'abáut fiftín mínits. wud iu láik tu ueit at de bar?'}},
-{id:'seating_wait-intermedio', category:'seating_wait', level:'intermedio',
-  client:{en:'Can we sit outside instead?', es:'¿Podemos sentarnos afuera en vez de adentro?'},
-  waiter:{en:'Of course, let me check if a table is free on the terrace.', es:'Por supuesto, déjeme ver si hay una mesa libre en la terraza.', ph:'of córs, let mi chek if a téibol is fri on de téras.'}},
-{id:'seating_wait-avanzado', category:'seating_wait', level:'avanzado',
-  client:{en:"We've been waiting for almost forty minutes.", es:'Estamos esperando hace casi cuarenta minutos.'},
-  waiter:{en:"I'm really sorry about the delay. Let me check with the kitchen and get you seated right away.", es:'Lamento mucho la demora. Voy a hablar con la cocina y los siento de inmediato.', ph:'áim ríli sórri abáut de diléi. let mi chek uíd de kíchen and guet iu sítid ráit auéi.'}},
-
 {id:'reservations-basico', category:'reservations', level:'basico',
   client:{en:"I'd like to make a reservation for tomorrow.", es:'Quisiera hacer una reserva para mañana.'},
   waiter:{en:'Sure, what time would you like to come?', es:'Claro, ¿a qué hora les gustaría venir?', ph:'shur, uát táim wud iu láik tu cam?'}},
@@ -418,9 +423,39 @@ const DIALOGUES = [
   client:{en:"We're a group of twelve, do you have space for us this Saturday?", es:'Somos un grupo de doce, ¿tienen lugar para nosotros este sábado?'},
   waiter:{en:"For a group that size, I'd recommend booking the back room. I'll set that up and send you a confirmation.", es:'Para un grupo de ese tamaño, recomendaría reservar el salón del fondo. Lo organizo y les mando una confirmación.', ph:'for a grup dat sáiz, áid rekoménd búking de bak rum. áil set dat ap and send iu a confirméishon.'}},
 
-{id:'drinks-basico', category:'drinks', level:'basico',
+{id:'seating_wait-basico', category:'seating_wait', level:'basico',
+  client:{en:'How long is the wait?', es:'¿Cuánto es la espera?'},
+  waiter:{en:'About fifteen minutes. Would you like to wait at the bar?', es:'Unos quince minutos. ¿Les gustaría esperar en la barra?', ph:'abáut fiftín mínits. wud iu láik tu ueit at de bar?'}},
+{id:'seating_wait-intermedio', category:'seating_wait', level:'intermedio',
+  client:{en:'Can we sit outside instead?', es:'¿Podemos sentarnos afuera en vez de adentro?'},
+  waiter:{en:'Of course, let me check if a table is free on the terrace.', es:'Por supuesto, déjeme ver si hay una mesa libre en la terraza.', ph:'of córs, let mi chek if a téibol is fri on de téras.'}},
+{id:'seating_wait-avanzado', category:'seating_wait', level:'avanzado',
+  client:{en:"We've been waiting for almost forty minutes.", es:'Estamos esperando hace casi cuarenta minutos.'},
+  waiter:{en:"I'm really sorry about the delay. Let me check with the kitchen and get you seated right away.", es:'Lamento mucho la demora. Voy a hablar con la cocina y los siento de inmediato.', ph:'áim ríli sórri abáut de diléi. let mi chek uíd de kíchen and guet iu sítid ráit auéi.'}},
+
+{id:'menu-basico', category:'menu', level:'basico',
   client:{en:'Could we see the menu?', es:'¿Podemos ver el menú?'},
-  waiter:{en:'Of course. Here are the menus. Would you like something to drink?', es:'Por supuesto. Aquí tienen los menús. ¿Les gustaría tomar algo?', ph:'of córs. jíar ar de méniuz. wud iu láik sámzing tu drink?'}},
+  waiter:{en:'Of course, here are the menus. Take your time.', es:'Por supuesto, aquí tienen los menús. Tómense su tiempo.', ph:'of córs, jíar ar de méniuz. téik iur táim.'}},
+{id:'menu-intermedio', category:'menu', level:'intermedio',
+  client:{en:'Are there any specials today?', es:'¿Hay alguna especialidad hoy?'},
+  waiter:{en:"Yes, today's special is the trout with almonds, freshly caught this morning.", es:'Sí, la especialidad de hoy es la trucha con almendras, pescada esta mañana.', ph:'yes, tudéis spéshal is de tráut uíd álmonds, freshli cot dis mórning.'}},
+{id:'menu-avanzado', category:'menu', level:'avanzado',
+  client:{en:"Could you bring us a menu without the prices? We're hosting some guests.", es:'¿Nos trae un menú sin los precios? Estamos agasajando a unos invitados.'},
+  waiter:{en:"Of course, I'll bring a guest menu without prices right away.", es:'Por supuesto, le traigo enseguida un menú de cortesía sin precios.', ph:'of córs, áil bring a guést méniu uidáut práisis ráit auéi.'}},
+
+{id:'dishes-basico', category:'dishes', level:'basico',
+  client:{en:"What's in this dish?", es:'¿Qué lleva este plato?'},
+  waiter:{en:'It\u2019s grilled salmon with vegetables and a lemon sauce.', es:'Es salmón a la parrilla con vegetales y salsa de limón.', ph:'its gríld sámon uíd véyetabols and a lémon sos.'}},
+{id:'dishes-intermedio', category:'dishes', level:'intermedio',
+  client:{en:'Is this dish spicy?', es:'¿Este plato es picante?'},
+  waiter:{en:"It's mild, but I can ask the kitchen to make it spicier if you'd like.", es:'Es suave, pero puedo pedirle a la cocina que lo haga más picante si quiere.', ph:'its máild, bat ái can ask de kíchen tu méik it spáisier if iud láik.'}},
+{id:'dishes-avanzado', category:'dishes', level:'avanzado',
+  client:{en:'What makes this dish different from a regular milanesa?', es:'¿Qué diferencia tiene este plato de una milanesa común?'},
+  waiter:{en:"This one is stuffed with ham and cheese, then breaded and fried, so it's a bit richer.", es:'Esta está rellena de jamón y queso, después empanada y frita, así que es un poco más contundente.', ph:'dis uán is staft uíd jam and chiz, den brédid and fráid, so its a bit rícher.'}},
+
+{id:'drinks-basico', category:'drinks', level:'basico',
+  client:{en:'Could I get some water, please?', es:'¿Me trae agua, por favor?'},
+  waiter:{en:'Of course, still or sparkling?', es:'Por supuesto, ¿con gas o sin gas?', ph:'of córs, stil or spárkling?'}},
 {id:'drinks-intermedio', category:'drinks', level:'intermedio',
   client:{en:'What wines would you recommend with the steak?', es:'¿Qué vinos recomendaría con el bife?'},
   waiter:{en:"I'd suggest our Malbec, it pairs really well with red meat.", es:'Le sugeriría nuestro Malbec, marida muy bien con carnes rojas.', ph:'áid sadyést áur malbéc, it péars ríli uél uíd red mit.'}},
@@ -438,26 +473,6 @@ const DIALOGUES = [
   client:{en:"We're still deciding, could you give us a few more minutes?", es:'Todavía estamos decidiendo, ¿nos da unos minutos más?'},
   waiter:{en:"Take your time, I'll come back in a few minutes.", es:'Tómense su tiempo, vuelvo en unos minutos.', ph:'téik iur táim, áil cam bak in a fiú mínits.'}},
 
-{id:'dishes-basico', category:'dishes', level:'basico',
-  client:{en:"What's in this dish?", es:'¿Qué lleva este plato?'},
-  waiter:{en:'It\u2019s grilled salmon with vegetables and a lemon sauce.', es:'Es salmón a la parrilla con vegetales y salsa de limón.', ph:'its gríld sámon uíd véyetabols and a lémon sos.'}},
-{id:'dishes-intermedio', category:'dishes', level:'intermedio',
-  client:{en:'Is this dish spicy?', es:'¿Este plato es picante?'},
-  waiter:{en:"It's mild, but I can ask the kitchen to make it spicier if you'd like.", es:'Es suave, pero puedo pedirle a la cocina que lo haga más picante si quiere.', ph:'its máild, bat ái can ask de kíchen tu méik it spáisier if iud láik.'}},
-{id:'dishes-avanzado', category:'dishes', level:'avanzado',
-  client:{en:'What makes this dish different from a regular milanesa?', es:'¿Qué diferencia tiene este plato de una milanesa común?'},
-  waiter:{en:"This one is stuffed with ham and cheese, then breaded and fried, so it's a bit richer.", es:'Esta está rellena de jamón y queso, después empanada y frita, así que es un poco más contundente.', ph:'dis uán is staft uíd jam and chiz, den brédid and fráid, so its a bit rícher.'}},
-
-{id:'allergies-basico', category:'allergies', level:'basico',
-  client:{en:"I'm allergic to peanuts.", es:'Soy alérgico al maní.'},
-  waiter:{en:"Thank you for letting me know, I'll make sure the kitchen is careful.", es:'Gracias por avisarme, me voy a asegurar de que la cocina tenga cuidado.', ph:'zenk iu for létin mi nóu, áil méik shur de kíchen is kérful.'}},
-{id:'allergies-intermedio', category:'allergies', level:'intermedio',
-  client:{en:'Does this sauce contain dairy?', es:'¿Esta salsa tiene lácteos?'},
-  waiter:{en:'Yes, it has cream in it. I can suggest a dairy-free option instead.', es:'Sí, lleva crema. Le puedo sugerir una opción sin lácteos.', ph:'yes, it jas crim in it. ái can sadyést a déri-frí ópshon insted.'}},
-{id:'allergies-avanzado', category:'allergies', level:'avanzado',
-  client:{en:'I have a severe shellfish allergy, can you guarantee there\u2019s no cross-contamination?', es:'Tengo una alergia grave a los mariscos, ¿me pueden garantizar que no hay contaminación cruzada?'},
-  waiter:{en:"I understand, I'll speak directly with the chef to make sure your dish is prepared separately.", es:'Entiendo, voy a hablar directamente con el chef para que su plato se prepare por separado.', ph:'ái anderstánd, áil spik dairéctli uíd de shef tu méik shur iur dish is prepérd séparetli.'}},
-
 {id:'recommendations-basico', category:'recommendations', level:'basico',
   client:{en:'What do you recommend?', es:'¿Qué me recomienda?'},
   waiter:{en:'Our specialty tonight is the trout with almonds.', es:'Nuestra especialidad de esta noche es la trucha con almendras.', ph:'áur spéshalti tunáit is de tráut uíd álmonds.'}},
@@ -467,6 +482,46 @@ const DIALOGUES = [
 {id:'recommendations-avanzado', category:'recommendations', level:'avanzado',
   client:{en:'We want to try something typical from the region.', es:'Queremos probar algo típico de la región.'},
   waiter:{en:"Then I'd suggest our surubí with chimichurri, it's a local favorite.", es:'Entonces le sugiero nuestro surubí con chimichurri, es un favorito de la zona.', ph:'den áid sadyést áur surubí uíd chimichúrri, its a lóukal féivorit.'}},
+
+{id:'allergies-basico', category:'allergies', level:'basico',
+  client:{en:"I'm allergic to peanuts.", es:'Soy alérgico al maní.'},
+  waiter:{en:"Thank you for letting me know, I'll make sure the kitchen is careful.", es:'Gracias por avisarme, me voy a asegurar de que la cocina tenga cuidado.', ph:'zenk iu for létin mi nóu, áil méik shur de kíchen is kérful.'}},
+{id:'allergies-intermedio', category:'allergies', level:'intermedio',
+  client:{en:'Does this sauce contain dairy? I\u2019m lactose intolerant.', es:'¿Esta salsa tiene lácteos? Soy intolerante a la lactosa.'},
+  waiter:{en:'Yes, it has cream in it. I can suggest a dairy-free option instead.', es:'Sí, lleva crema. Le puedo sugerir una opción sin lácteos.', ph:'yes, it jas crim in it. ái can sadyést a déri-frí ópshon insted.'}},
+{id:'allergies-avanzado', category:'allergies', level:'avanzado',
+  client:{en:'I have a severe shellfish allergy, can you guarantee there\u2019s no cross-contamination?', es:'Tengo una alergia grave a los mariscos, ¿me pueden garantizar que no hay contaminación cruzada?'},
+  waiter:{en:"I understand, I'll speak directly with the chef to make sure your dish is prepared separately.", es:'Entiendo, voy a hablar directamente con el chef para que su plato se prepare por separado.', ph:'ái anderstánd, áil spik dairéctli uíd de shef tu méik shur iur dish is prepérd séparetli.'}},
+
+{id:'cooking_pref-basico', category:'cooking_pref', level:'basico',
+  client:{en:"I'll have the steak, please.", es:'Voy a pedir el bife, por favor.'},
+  waiter:{en:'How would you like it cooked?', es:'¿Cómo le gustaría la cocción?', ph:'jáu wud iu láik it cukt?'}},
+{id:'cooking_pref-intermedio', category:'cooking_pref', level:'intermedio',
+  client:{en:"I'll have the ribeye.", es:'Voy a pedir el ojo de bife.'},
+  waiter:{en:'How would you like that cooked \u2014 rare, medium, or well done?', es:'¿Cómo lo prefiere: jugoso, a punto o bien cocido?', ph:'jáu wud iu láik dat cukt — réar, mídium, or uél dan?'}},
+{id:'cooking_pref-avanzado', category:'cooking_pref', level:'avanzado',
+  client:{en:'Could I get it cooked medium-rare, but slightly more on the pink side?', es:'¿Me lo puede hacer a punto jugoso, pero un poco más rosado?'},
+  waiter:{en:"Of course, I'll ask the kitchen to keep it closer to rare within medium-rare.", es:'Por supuesto, le pido a la cocina que lo deje más cerca del jugoso dentro del término a punto.', ph:'of córs, áil ask de kíchen tu kip it clóuser tu réar uidín mídium-réar.'}},
+
+{id:'order_confirm-basico', category:'order_confirm', level:'basico',
+  client:{en:"That's all for now, thank you.", es:'Eso es todo por ahora, gracias.'},
+  waiter:{en:'Perfect, let me confirm: one steak and one salmon, is that right?', es:'Perfecto, le confirmo: un bife y un salmón, ¿es correcto?', ph:'pérfect, let mi confírm: uán stéik and uán sámon, is dat ráit?'}},
+{id:'order_confirm-intermedio', category:'order_confirm', level:'intermedio',
+  client:{en:"Yes, that's correct.", es:'Sí, así es.'},
+  waiter:{en:"Great, I'll send that to the kitchen right away.", es:'Perfecto, lo mando a la cocina enseguida.', ph:'gréit, áil send dat tu de kíchen ráit auéi.'}},
+{id:'order_confirm-avanzado', category:'order_confirm', level:'avanzado',
+  client:{en:'Actually, can you also add a side salad to that?', es:'En realidad, ¿puede agregar también una ensalada como guarnición?'},
+  waiter:{en:"Of course, let me confirm again: one steak, one salmon, and a side salad. I'll update the order.", es:'Por supuesto, le confirmo de nuevo: un bife, un salmón y una ensalada. Actualizo el pedido.', ph:'of córs, let mi confírm aguén: uán stéik, uán sámon, and a sáid sálad. áil apdéit de órder.'}},
+
+{id:'table_followup-basico', category:'table_followup', level:'basico',
+  client:{en:'Everything is great, thanks.', es:'Todo está genial, gracias.'},
+  waiter:{en:"I'm glad to hear that! Let me know if you need anything else.", es:'¡Qué bueno! Avísenme si necesitan algo más.', ph:'áim glad tu jíar dat! let mi nóu if iu nid énizing els.'}},
+{id:'table_followup-intermedio', category:'table_followup', level:'intermedio',
+  client:{en:'Could we get some more bread?', es:'¿Nos trae más pan?'},
+  waiter:{en:"Of course, I'll bring more right away.", es:'Por supuesto, traigo más enseguida.', ph:'of córs, áil bring mor ráit auéi.'}},
+{id:'table_followup-avanzado', category:'table_followup', level:'avanzado',
+  client:{en:"Could you bring some more water and check on our order? It's been a while.", es:'¿Nos trae más agua y consulta por nuestro pedido? Ya pasó un buen rato.'},
+  waiter:{en:'Absolutely, let me check with the kitchen on the timing and bring more water immediately.', es:'Por supuesto, consulto con la cocina el tiempo y les traigo más agua de inmediato.', ph:'ábsoliutli, let mi chek uíd de kíchen on de táiming and bring mor uáter imídiatli.'}},
 
 {id:'complaints-basico', category:'complaints', level:'basico',
   client:{en:"This isn't what I ordered.", es:'Esto no es lo que pedí.'},
@@ -488,6 +543,16 @@ const DIALOGUES = [
   client:{en:'Could we split one dessert between the two of us?', es:'¿Podemos compartir un postre entre los dos?'},
   waiter:{en:"Of course, I'll bring two spoons and an extra plate.", es:'Por supuesto, le traigo dos cucharas y un plato extra.', ph:'of córs, áil bring tu spuns and an ékstra pléit.'}},
 
+{id:'coffee-basico', category:'coffee', level:'basico',
+  client:{en:'Could I get a coffee?', es:'¿Me trae un café?'},
+  waiter:{en:'Of course. Would you like it with milk?', es:'Por supuesto. ¿Lo quiere con leche?', ph:'of córs. wud iu láik it uíd milk?'}},
+{id:'coffee-intermedio', category:'coffee', level:'intermedio',
+  client:{en:'Do you have decaf?', es:'¿Tienen descafeinado?'},
+  waiter:{en:'Yes, we have decaf coffee and herbal tea as well.', es:'Sí, tenemos café descafeinado y también té de hierbas.', ph:'yes, uí jav dikáf cófi and jérbal ti as uél.'}},
+{id:'coffee-avanzado', category:'coffee', level:'avanzado',
+  client:{en:'Could we get two coffees after dessert, one espresso and one cappuccino?', es:'¿Nos trae dos cafés después del postre, uno espresso y uno capuchino?'},
+  waiter:{en:"Sure, I'll bring those right after your dessert.", es:'Claro, se los traigo justo después del postre.', ph:'shur, áil bring dóus ráit áfter iur disért.'}},
+
 {id:'billing-basico', category:'billing', level:'basico',
   client:{en:'Can we have the check, please?', es:'¿Nos trae la cuenta, por favor?'},
   waiter:{en:"Of course, I'll bring it right away.", es:'Por supuesto, se la traigo enseguida.', ph:'of córs, áil bring it ráit auéi.'}},
@@ -495,8 +560,18 @@ const DIALOGUES = [
   client:{en:'Could we split the bill in two?', es:'¿Podemos dividir la cuenta en dos?'},
   waiter:{en:"Sure, I'll bring two separate checks.", es:'Claro, le traigo dos cuentas separadas.', ph:'shur, áil bring tu séparet cheks.'}},
 {id:'billing-avanzado', category:'billing', level:'avanzado',
-  client:{en:'Do you accept international cards, and is there a service charge?', es:'¿Aceptan tarjetas internacionales y hay algún cargo por servicio?'},
-  waiter:{en:'Yes, we accept international cards, and the service charge is optional, it\u2019s up to you.', es:'Sí, aceptamos tarjetas internacionales, y el cargo por servicio es opcional, queda a su criterio.', ph:'yes, uí aksépt internáshonal cards, and de sérvis charch is ópshonal, its ap tu iu.'}},
+  client:{en:'Could you itemize the bill for our group?', es:'¿Nos puede detallar la cuenta para el grupo?'},
+  waiter:{en:"Of course, I'll bring an itemized bill so everyone can see what they ordered.", es:'Por supuesto, le traigo una cuenta detallada para que cada uno vea lo que pidió.', ph:'of córs, áil bring an áitemaisd bil so évriuán can si uát déi órderd.'}},
+
+{id:'payment-basico', category:'payment', level:'basico',
+  client:{en:"We'll pay by card.", es:'Vamos a pagar con tarjeta.'},
+  waiter:{en:"Perfect, I'll bring the card machine.", es:'Perfecto, le traigo la máquina de tarjetas.', ph:'pérfect, áil bring de kard mashín.'}},
+{id:'payment-intermedio', category:'payment', level:'intermedio',
+  client:{en:'Can I pay part in cash and part by card?', es:'¿Puedo pagar parte en efectivo y parte con tarjeta?'},
+  waiter:{en:"Yes, that's no problem, just let me know the amounts.", es:'Sí, no hay problema, solo dígame los montos.', ph:'yes, dats nóu práblem, yast let mi nóu de amáunts.'}},
+{id:'payment-avanzado', category:'payment', level:'avanzado',
+  client:{en:'Do you accept payment in US dollars as well?', es:'¿Aceptan también el pago en dólares?'},
+  waiter:{en:"We do accept dollars, though the exchange rate applied is set by the house \u2014 I can check today's rate for you.", es:'Sí, aceptamos dólares, aunque el tipo de cambio lo fija la casa; le puedo consultar el de hoy.', ph:'uí du aksépt dálars, dóu de ekschéinch réit aplaid is set bái de jáus — ái can chek tudéis réit for iu.'}},
 
 {id:'farewell-basico', category:'farewell', level:'basico',
   client:{en:'Thank you, everything was great.', es:'Gracias, todo estuvo genial.'},
@@ -509,6 +584,7 @@ const DIALOGUES = [
   waiter:{en:'I certainly will, thank you for celebrating with us tonight, see you soon!', es:'Por supuesto que sí, gracias por festejar con nosotros esta noche, ¡hasta pronto!', ph:'ái sértenli uíl, zenk iu for celebréiting uíd as tunáit, si iu sun!'}},
 ];
 
+
 // Orden global: agrupado por nivel (todo básico primero) y dentro de cada nivel, por etapa del servicio.
 const ORDERED_IDS = [];
 LEVELS.forEach(lv => {
@@ -519,6 +595,69 @@ LEVELS.forEach(lv => {
 });
 function byId(id){ return DIALOGUES.find(d => d.id === id); }
 function catLabel(id){ return (CATEGORIES.find(c=>c.id===id)||{}).label || id; }
+
+/* =========================================================
+   PROTOCOLO DE LA FONTE — secuencia real de la casa
+   Nota: hay 4 puntos marcados con "flag" porque el nombre exacto
+   del ítem no quedó claro en lo que me pasaste — los dejé con mi
+   mejor interpretación, corregime el texto y lo actualizo.
+   ========================================================= */
+const PROTOCOL = [
+  {step:1, title:'Bebidas de bienvenida', items:null,
+    note:'Se ofrece al comensal una bebida apenas se sienta.',
+    en:'Welcome! Would you like something to drink to start — still or sparkling water, a glass of wine, or a cocktail?',
+    es:'¡Bienvenidos! ¿Les gustaría algo para tomar para empezar: agua con o sin gas, una copa de vino, o un cóctel?',
+    ph:'uélcam! wud iu láik sámzing tu drink tu start — stil or spárkling uáter, a glas of uáin, or a cocktéil?'},
+  {step:2, title:'Panera', items:[
+      'Grisín estirado (flag: confirmame el nombre exacto)',
+      'Chala — clorofila de espinaca con sésamo blanco',
+      'Focaccia marinera',
+      'Untable de remolacha con ralladura de pomelo rosado y oliva extra virgen (flag: confirmame "Untable")'
+    ],
+    note:'Se presenta la panera describiendo cada elemento.',
+    en:'This is our bread basket: a hand-stretched grissini, a spinach and white sesame flatbread, a seafood focaccia, and a beet spread with pink grapefruit zest and extra virgin olive oil.',
+    es:'Esta es nuestra panera: un grisín estirado a mano, una chala de espinaca con sésamo blanco, una focaccia marinera, y un untable de remolacha con ralladura de pomelo rosado y aceite de oliva extra virgen.',
+    ph:'dis is áur bred básket: a jand-strécht grisíni, a spínach and uáit sésami flátbred, a sífud fokácha, and a bit spred uíd pink gréipfrut zest and ékstra vércHin óliv oil.'},
+  {step:3, title:'Alfajor salado', items:[
+      'Crème brûlée de porotos (frijol negro)',
+      'Masa frita (flag: confirmame si es "masa frita", "masa crocante" u otra)',
+      'Semillas de sésamo (ajonjolí)'
+    ],
+    note:'Bocado de cortesía antes de las entradas.',
+    en:'This is a small savory bite from the chef: a black bean crème brûlée with crispy pastry and sesame seeds.',
+    es:'Este es un bocado salado de cortesía del chef: un crème brûlée de porotos negros con masa crocante y semillas de sésamo.',
+    ph:'dis is a smol séivori báit from de chef: a blak bin crem brulé uíd críspi péistri and sésami sids.'},
+  {step:4, title:'Entradas', items:null,
+    note:'Oferta de las entradas de la carta.',
+    en:'Would you like to start with one of our appetizers? I can walk you through today\u2019s options.',
+    es:'¿Les gustaría empezar con alguna de nuestras entradas? Les puedo comentar las opciones de hoy.',
+    ph:'wud iu láik tu start uíd uán of áur ápetaisers? ái can uók iu zru tudéis ópshons.'},
+  {step:5, title:'Plato fuerte', items:null,
+    note:'Ofrecimiento de los platos principales de la carta.',
+    en:'For the main course, would you like me to go through today\u2019s dishes?',
+    es:'Para el plato principal, ¿les gustaría que les cuente los platos de hoy?',
+    ph:'for de méin cors, wud iu láik mi tu góu zru tudéis díshis?'},
+  {step:6, title:'Jugo de naranja con Campari', items:null,
+    note:'Se ofrece para cambiar el paladar de lo salado a lo dulce, antes del postre.',
+    en:'Before dessert, we\u2019d like to offer you a small orange and Campari juice to cleanse your palate.',
+    es:'Antes del postre, nos gustaría ofrecerles un jugo de naranja con Campari para limpiar el paladar.',
+    ph:'bifór disért, uid láik tu ófer iu a smol óranch and cámpari yus tu klins iur pálet.'},
+  {step:7, title:'Postres', items:null,
+    note:'Elección de postre.',
+    en:'Would you like to see our dessert menu now?',
+    es:'¿Les gustaría ver la carta de postres ahora?',
+    ph:'wud iu láik tu si áur disért méniu náu?'},
+  {step:8, title:'Profiterol', items:null,
+    note:'Se ofrece como brindis por la buena velada.',
+    en:'To close the evening, we\u2019d like to offer you a profiterole, on the house, as a toast to a wonderful evening.',
+    es:'Para cerrar la noche, nos gustaría ofrecerles un profiterol, cortesía de la casa, como brindis por una excelente velada.',
+    ph:'tu clóus de ívning, uid láik tu ófer iu a prófiterol, on de jáus, as a tóust tu a uánderful ívning.'},
+  {step:9, title:'Extra: café o "lenchuelo"', items:null,
+    note:'Se ofrece además café, o el segundo ítem que mencionaste (flag: no me quedó claro qué es "lenchuelo" — decime de qué se trata y armo la frase en inglés para eso también).',
+    en:'Would you like a coffee to finish the evening?',
+    es:'¿Les gustaría un café para cerrar la noche?',
+    ph:'wud iu láik a cófi tu fínish de ívning?'},
+];
 
 /* =========================================================
    ESTADO / localStorage
@@ -625,6 +764,34 @@ function speak(text, rate){
   if(v) u.voice = v;
   speechSynthesis.speak(u);
 }
+const SLOW_RATE = 0.55;
+const VERY_SLOW_RATE = 0.4;
+const CLIENT_RATE = 0.8;
+
+// Divide una frase en partes cortas (por comas y punto y coma) para
+// reproducirlas una por una, dejando una pausa entre cada una para repetir.
+function chunkText(text){
+  const parts = text.split(/[,;]/).map(s=>s.trim()).filter(Boolean);
+  return parts.length ? parts : [text];
+}
+function speakChunksFrom(chunks, rate, idx){
+  if(idx >= chunks.length) return;
+  const u = new SpeechSynthesisUtterance(chunks[idx]);
+  u.lang = 'en-US';
+  u.rate = rate;
+  const v = pickVoice();
+  if(v) u.voice = v;
+  u.onend = () => { setTimeout(()=>speakChunksFrom(chunks, rate, idx+1), 1300); };
+  speechSynthesis.speak(u);
+}
+function speakByParts(text, rate){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  speakChunksFrom(chunkText(text), rate || VERY_SLOW_RATE, 0);
+}
+function stopSpeaking(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+}
 
 /* =========================================================
    RENDER: header
@@ -652,7 +819,7 @@ function phraseTicketHTML(d, ticketNo, opts){
         <p class="en">${d.client.en}</p>
         <p class="es">${d.client.es}</p>
         <div class="line-controls">
-          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',0.85)">▶ escuchar</button>
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',CLIENT_RATE)">▶ escuchar</button>
         </div>
       </div>
     </div>
@@ -663,8 +830,9 @@ function phraseTicketHTML(d, ticketNo, opts){
         <p class="es">${d.waiter.es}</p>
         <p class="ph">${d.waiter.ph}</p>
         <div class="line-controls">
-          <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',0.7)">▶ lenta</button>
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',SLOW_RATE)">▶ lenta</button>
           <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',1)">▶ normal</button>
+          <button class="btn ghost sm" onclick="speakByParts('${escAttr(d.waiter.en)}',VERY_SLOW_RATE)">⏸ por partes</button>
         </div>
       </div>
     </div>
@@ -722,7 +890,7 @@ function toggleAccordion(catId){
 /* =========================================================
    RENDER: Modo audio
    ========================================================= */
-let audioSpeed = 0.7;
+let audioSpeed = 0.55;
 function renderAudioFilters(){
   const catSel = document.getElementById('audioCatFilter');
   catSel.innerHTML = `<option value="">Todas las situaciones</option>` + CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
@@ -751,6 +919,7 @@ function renderAudioList(){
       <div class="line-controls">
         <button class="btn brass sm" onclick="speak('${escAttr(d.waiter.en)}', audioSpeed)">▶ escuchar</button>
         <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}', audioSpeed)">↻ repetir</button>
+        <button class="btn ghost sm" onclick="speakByParts('${escAttr(d.waiter.en)}',VERY_SLOW_RATE)">⏸ por partes</button>
       </div>
     </div>`).join('');
 }
@@ -771,7 +940,7 @@ function pickConvoDialogue(){
   if(pool.length===0){ document.getElementById('convoStage').innerHTML = `<div class="empty-note">No hay diálogos con ese filtro.</div>`; return; }
   convoCurrent = pool[Math.floor(Math.random()*pool.length)];
   renderConvoStage();
-  speak(convoCurrent.client.en, 0.85);
+  speak(convoCurrent.client.en, CLIENT_RATE);
 }
 function normalize(s){
   return s.toLowerCase().replace(/[.,!?¿¡']/g,'').trim();
@@ -794,7 +963,7 @@ function renderConvoStage(){
         <p class="en">${d.client.en}</p>
         <p class="es">${d.client.es}</p>
         <div class="line-controls">
-          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',0.85)">▶ escuchar otra vez</button>
+          <button class="btn ghost sm" onclick="speak('${escAttr(d.client.en)}',CLIENT_RATE)">▶ escuchar otra vez</button>
         </div>
       </div>
     </div>
@@ -848,7 +1017,8 @@ function revealConvoAnswer(){
     <p class="es" style="margin:4px 0;">${d.waiter.es}</p>
     <p class="ph" style="margin:0;">${d.waiter.ph}</p>
     <div class="line-controls" style="margin-top:8px;">
-      <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',0.7)">▶ escuchar lento</button>
+      <button class="btn ghost sm" onclick="speak('${escAttr(d.waiter.en)}',SLOW_RATE)">▶ escuchar lento</button>
+      <button class="btn ghost sm" onclick="speakByParts('${escAttr(d.waiter.en)}',VERY_SLOW_RATE)">⏸ por partes</button>
     </div>
   </div>`;
 }
@@ -879,6 +1049,36 @@ function renderProgress(){
 }
 
 /* =========================================================
+   RENDER: Protocolo De La Fonte
+   ========================================================= */
+function renderProtocol(){
+  const el = document.getElementById('protocolList');
+  el.innerHTML = PROTOCOL.map(p => {
+    const itemsHTML = p.items ? `<ul style="margin:6px 0 10px; padding-left:18px; font-size:12.5px; color:var(--ink-soft);">${p.items.map(i=>`<li>${i}</li>`).join('')}</ul>` : '';
+    return `
+    <div class="ticket">
+      <div class="ticket-no">Paso ${p.step}</div>
+      <div class="ticket-cat">${p.title}</div>
+      <p class="es" style="margin:0 0 6px;">${p.note}</p>
+      ${itemsHTML}
+      <div class="line" style="border-top:1px dashed var(--line);">
+        <div class="who">En inglés</div>
+        <div class="speech">
+          <p class="en">${p.en}</p>
+          <p class="es">${p.es}</p>
+          <p class="ph">${p.ph}</p>
+          <div class="line-controls">
+            <button class="btn ghost sm" onclick="speak('${escAttr(p.en)}',SLOW_RATE)">▶ lenta</button>
+            <button class="btn ghost sm" onclick="speakByParts('${escAttr(p.en)}',VERY_SLOW_RATE)">⏸ por partes</button>
+            <button class="btn ghost sm" onclick="speak('${escAttr(p.en)}',1)">▶ normal</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
    TABS
    ========================================================= */
 document.querySelectorAll('nav.tabs button').forEach(btn=>{
@@ -889,6 +1089,7 @@ document.querySelectorAll('nav.tabs button').forEach(btn=>{
     document.getElementById('view-'+btn.dataset.view).classList.add('active');
     if(btn.dataset.view==='progreso') renderProgress();
     if(btn.dataset.view==='plan') renderPlan();
+    if(btn.dataset.view==='protocolo') renderProtocol();
   });
 });
 
@@ -902,6 +1103,7 @@ renderAudioFilters();
 renderAudioList();
 renderConvoFilters();
 renderConvoStage();
+renderProtocol();
 </script>
 </body>
 </html>
